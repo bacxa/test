@@ -16,7 +16,7 @@ User.create!(name:  "Example User",
 99.times do |n|
   name  = Faker::Name.name
   email = "example-#{n+1}@railstutorial.org"
-  password = "password"
+  password = "123456"
   User.create!(name:  name,
               email: email,
               password:              password,
@@ -24,3 +24,24 @@ User.create!(name:  "Example User",
               activated: true,
               activated_at: Time.zone.now)
 end
+
+users = User.order(:created_at).take(6)
+50.times do
+  content = Faker::Lorem.sentence(5)
+  users.each { |user| user.microposts.create!(content: content) }
+end
+
+# user.microposts.create!(content: content)
+
+# user.microposts = tat ca microposts cua user ActiveRecord
+# Micropost.create(content: "abc xyz", user_id: user.id)
+
+
+# 1. Tao user co name la "huy123456"
+# 2. update "huy123456" thanh admin
+# 3. tao 1 microposts cua "huy" co noi dung la "abc" bang cach tao truc tiep model Micropost
+# 4. tao 1 microposts cua "huy" co noi dung la "xyz" bang cach tao gian tiep thong qua user 'huy'
+# 5. lay ra tat ca micropost cua "huy"
+# 6. Sap xep tat ca micropost cua "huy" theo content
+# 7. Xoa thang micropost moi tao nhat cua "huy"
+# 8. Lay ra user ma da tao ra Micorpost co id la 100

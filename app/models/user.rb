@@ -1,4 +1,5 @@
 class User < ActiveRecord::Base
+  has_many :microposts
   attr_accessor :remember_token, :activation_token, :reset_token
   before_save   :downcase_email
   before_create :create_activation_digest
@@ -9,6 +10,11 @@ class User < ActiveRecord::Base
                     uniqueness: { case_sensitive: false }
   has_secure_password
   validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
+  scope :get_users,->(id){find_by(id: id)}
+
+  PARAMS_PERMIT = [:name, :email, :password, :password_confirmation]
+
+  # validate :must_be_point
 
   # Returns the hash digest of the given string. class method
   class << self
@@ -33,10 +39,10 @@ class User < ActiveRecord::Base
     #   BCrypt::Password.new(remember_digest).is_password?(remember_token)
     # end
     def authenticated?(attribute, token)
-    digest = send("#{attribute}_digest")
-    return false if digest.nil?
-    BCrypt::Password.new(digest).is_password?(token)
-  end
+      digest = send("#{attribute}_digest")
+      return false if digest.nil?
+      BCrypt::Password.new(digest).is_password?(token)
+    end
   end
 
   def forget
@@ -66,7 +72,18 @@ class User < ActiveRecord::Base
     reset_sent_at < 2.hours.ago
   end
 
- private
+  def feed
+    Micropost.where("user_id = ?", id)
+  end
+
+  # def must_be_point
+  #   # errors.add(:point, "Day khong phai la point") if point > 10 || point < 0
+  #   return if point < 10 && point > 0
+
+  #   errors.add(:point, "Day khong phai la point")
+  # end
+
+private
 
   # Converts email to all lower-case.
   def downcase_email
@@ -78,4 +95,23 @@ class User < ActiveRecord::Base
     self.activation_token  = User.new_token
     self.activation_digest = User.digest(activation_token)
   end
+
+  # def password_regex
+  #   return if password.blank? || password =~ /\A(?=.*\d)(?=.*[A-Z])(?=.*\W)[^ ]{7,}\z/
+
+  #   errors.add :password, 'Password should have more than 7 characters including 1 uppercase letter, 1 number, 1 special character'
+  # end
+
+  # def validate_each(record, attribute, value)
+  #   unless value =~ /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i
+  #     record.errors[attribute] << (options[:message] || "wrong email address")
+  #   end
+  # end
+
+  # def validate(record)
+  #   unless record.name.starts_with? 'X'
+  #     record.errors[:name] << 'Need a name starting with X please!'
+  #   end
+  # end
+
 end

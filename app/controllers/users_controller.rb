@@ -3,11 +3,12 @@ class UsersController < ApplicationController
   before_action :correct_user,   only: [:edit, :update]
 
   def index
-   @users = User.paginate(page: params[:page])
+    @users = User.paginate(page: params[:page])
   end
 
   def show
-    @user = User.find(params[:id])
+    @user = User.find_by(params[:id])
+    @microposts = @user.microposts.paginate(page: params[:page]).per_page 20
   end
 
   def new
@@ -26,11 +27,11 @@ class UsersController < ApplicationController
   end
 
   def edit
-    @user = User.find(params[:id])
+    @user = User.find_by(params[:id])
   end
 
   def update
-    @user = User.find(params[:id])
+    @user = User.find_by(params[:id])
     if @user.update_attributes(user_params)
       flash[:success] = "Profile updated"
       redirect_to @user
@@ -42,8 +43,7 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:name, :email, :password,
-                                 :password_confirmation)
+    params.require(:user).permit(User::PARAMS_PERMIT)
   end
 
   def logged_in_user
@@ -55,7 +55,7 @@ class UsersController < ApplicationController
   end
 
   def correct_user
-    @user = User.find(params[:id])
+    @user = User.find_by(id: params[:id])
     redirect_to(root_url) unless current_user?(@user)
   end
 end
